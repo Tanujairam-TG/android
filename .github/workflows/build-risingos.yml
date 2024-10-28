@@ -39,29 +39,34 @@ jobs:
 
     - name: Start RisingOS build
       env:
-        RISING_DEVICE: "sky"
-        RISING_BUILD_TYPE: "userdebug"
+        RISING_DEVICE: "sky"            # Device name
+        RISING_BUILD_TYPE: "userdebug"   # Build type
       run: |
         riseup $RISING_DEVICE $RISING_BUILD_TYPE
         rise b
 
-    - name: Build fastboot update package (optional)
-      if: always()
+    - name: Archive build outputs
       run: |
-        riseup $RISING_DEVICE $RISING_BUILD_TYPE
-        rise fb
+        mkdir -p output
+        cp out/target/product/sky/*.zip output/   # Update this path if necessary
 
-    - name: Generate signing keys (if required)
-      run: |
-        gk -s
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ghp_11AVEBS7I0eP0fwAZT1Uup_rdQQWPuIrYdjdtnKWegsMkmw6ZrDf7EqPP7wH8KNKMx3NJ2O2ANTYNd1VlV  # Replace with your token (Not Recommended)
+      with:
+        tag_name: "build-${{ github.run_id }}"
+        release_name: "RisingOS Build ${{ github.run_id }}"
+        draft: false
+        prerelease: true
 
-    - name: Build fully signed OTA package
-      if: always()
-      run: |
-        riseup $RISING_DEVICE $RISING_BUILD_TYPE
-        rise sb
-
-    - name: Clean up signing keys (optional)
-      if: always()
-      run: |
-        remove_keys
+    - name: Upload to Release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ghp_11AVEBS7I0eP0fwAZT1Uup_rdQQWPuIrYdjdtnKWegsMkmw6ZrDf7EqPP7wH8KNKMx3NJ2O2ANTYNd1VlV  # Replace with your token (Not Recommended)
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: output/*.zip                    # Path to build output
+        asset_name: RisingOS-${{ github.run_id }}.zip
+        asset_content_type: application/zip
