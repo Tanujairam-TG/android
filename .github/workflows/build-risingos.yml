@@ -1,13 +1,13 @@
 name: Build RisingOS
 
 on:
-  push:
+  push:    # Trigger on every push to any branch
     branches:
-      - main
-  pull_request:
+      - '*'  # Matches all branches; change to specific branches if needed
+  pull_request:   # Trigger on every pull request
     branches:
-      - main
-  workflow_dispatch:
+      - '*'  # Matches all branches
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   build:
@@ -20,7 +20,7 @@ jobs:
     - name: Install required packages
       run: |
         sudo apt update
-        sudo apt install -y git-lfs python3 curl  # Ensure git-lfs, python3, and curl are installed
+        sudo apt install -y git-lfs python3 curl
         # Create symlink for python3 if needed
         if ! command -v python &> /dev/null; then sudo ln -s /usr/bin/python3 /usr/bin/python; fi
 
@@ -29,14 +29,14 @@ jobs:
         mkdir -p ~/bin
         curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
         chmod a+x ~/bin/repo
-        export PATH=~/bin:$PATH  # Add the new repo location to PATH
+        export PATH=~/bin:$PATH
 
     - name: Set up Git LFS
       run: git lfs install
 
     - name: Initialize RisingOS Repository
       env:
-        PATH: ~/bin:$PATH  # Ensure the new repo binary is used here as well
+        PATH: ~/bin:$PATH
       run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen
         repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
@@ -61,7 +61,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  # Use your personal access token secret name here
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  # Use your GitHub PAT secret here
       with:
         tag_name: "build-${{ github.run_id }}"
         release_name: "RisingOS Build ${{ github.run_id }}"
@@ -71,9 +71,9 @@ jobs:
     - name: Upload to Release
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  # Use your personal access token secret name here
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  # Use your GitHub PAT secret here
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: output/*.zip                    # Path to build output
+        asset_path: output/*.zip
         asset_name: RisingOS-${{ github.run_id }}.zip
         asset_content_type: application/zip
