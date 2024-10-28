@@ -39,7 +39,7 @@ jobs:
 
     - name: Start RisingOS build
       env:
-        RISING_DEVICE: "example_device"
+        RISING_DEVICE: "sky"
         RISING_BUILD_TYPE: "userdebug"
       run: |
         riseup $RISING_DEVICE $RISING_BUILD_TYPE
