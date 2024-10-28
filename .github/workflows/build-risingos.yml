@@ -47,8 +47,11 @@ jobs:
     - name: Initialize RisingOS Repository
       run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen
-        # Check if repo command exists
+        echo "Repo has been initialized."
+        echo "Checking for repo command..."
         if command -v repo &> /dev/null; then
+          echo "Repo command found."
+          echo "Running repo sync..."
           timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4  # 8 hours timeout
         else
           echo "repo command not found"
