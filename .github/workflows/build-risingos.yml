@@ -17,11 +17,13 @@ jobs:
     - name: Set up repository
       uses: actions/checkout@v3
 
-    - name: Set up Git LFS
+    - name: Install required packages
       run: |
         sudo apt update
-        sudo apt install -y git-lfs
-        git lfs install
+        sudo apt install -y git-lfs repo
+
+    - name: Set up Git LFS
+      run: git lfs install
 
     - name: Initialize RisingOS Repository
       run: |
@@ -54,7 +56,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ghp_11AVEBS7I0eP0fwAZT1Uup_rdQQWPuIrYdjdtnKWegsMkmw6ZrDf7EqPP7wH8KNKMx3NJ2O2ANTYNd1VlV  # Replace with your token (Not Recommended)
+        GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}  # Use your personal access token here
       with:
         tag_name: "build-${{ github.run_id }}"
         release_name: "RisingOS Build ${{ github.run_id }}"
@@ -64,7 +66,7 @@ jobs:
     - name: Upload to Release
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ghp_11AVEBS7I0eP0fwAZT1Uup_rdQQWPuIrYdjdtnKWegsMkmw6ZrDf7EqPP7wH8KNKMx3NJ2O2ANTYNd1VlV  # Replace with your token (Not Recommended)
+        GITHUB_TOKEN: ${{ secrets.GITHUB_PAT }}  # Use your personal access token here
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: output/*.zip                    # Path to build output
