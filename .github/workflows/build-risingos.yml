@@ -32,7 +32,7 @@ jobs:
           sudo ln -s /usr/bin/python3 /usr/bin/python; 
         fi
         echo "Python version:" $(python3 --version)
-        
+
     - name: Add Python to PATH
       run: echo "/usr/bin/python3" >> $GITHUB_PATH
 
@@ -62,7 +62,7 @@ jobs:
         if command -v repo &> /dev/null; then
           echo "Repo command found."
           echo "Running repo sync..."
-          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4 -v | grep -v '^\* \[new tag\]'  # 8 hours timeout with verbose output, excluding new tag lines
+          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4 --quiet  # 8 hours timeout, reduced verbosity
         else
           echo "repo command not found"
           exit 1
