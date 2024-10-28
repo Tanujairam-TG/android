@@ -26,6 +26,8 @@ jobs:
       run: git lfs install
 
     - name: Initialize RisingOS Repository
+      env:
+        REPO_NO_UPDATE: 1  # Prevents the repo tool from trying to update itself
       run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen
         repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
