@@ -37,19 +37,23 @@ jobs:
     - name: Download and Install Latest Repo Tool
       run: |
         mkdir -p ~/bin
-        curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+        curl -o ~/bin/repo https://storage.googleapis.com/git-repo-downloads/repo
         chmod a+x ~/bin/repo
-        export PATH=~/bin:$PATH
+        echo "$HOME/bin" >> $GITHUB_PATH
 
     - name: Set up Git LFS
       run: git lfs install
 
     - name: Initialize RisingOS Repository
-      env:
-        PATH: ~/bin:$PATH:/usr/bin  # Ensuring /usr/bin is in the PATH for python3
       run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen
-        timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4  # 8 hours timeout
+        # Check if repo command exists
+        if command -v repo &> /dev/null; then
+          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4  # 8 hours timeout
+        else
+          echo "repo command not found"
+          exit 1
+        fi
 
     - name: Set up build environment
       run: . build/envsetup.sh
