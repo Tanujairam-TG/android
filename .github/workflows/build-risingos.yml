@@ -1,0 +1,67 @@
+name: Build RisingOS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Set up repository
+      uses: actions/checkout@v3
+
+    - name: Set up Git LFS
+      run: |
+        sudo apt update
+        sudo apt install -y git-lfs
+        git lfs install
+
+    - name: Initialize RisingOS Repository
+      run: |
+        repo init -u https://github.com/RisingTechOSS/android -b fifteen --git-lfs
+        repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
+
+    - name: Remove problematic GMS files
+      run: |
+        rm -rf vendor/gms
+        rm -rf .repo/projects/vendor/gms.git
+        rm -rf .repo/project-objects/*/android_vendor_gms.git
+
+    - name: Set up build environment
+      run: . build/envsetup.sh
+
+    - name: Start RisingOS build
+      env:
+        RISING_DEVICE: "example_device"
+        RISING_BUILD_TYPE: "userdebug"
+      run: |
+        riseup $RISING_DEVICE $RISING_BUILD_TYPE
+        rise b
+
+    - name: Build fastboot update package (optional)
+      if: always()
+      run: |
+        riseup $RISING_DEVICE $RISING_BUILD_TYPE
+        rise fb
+
+    - name: Generate signing keys (if required)
+      run: |
+        gk -s
+
+    - name: Build fully signed OTA package
+      if: always()
+      run: |
+        riseup $RISING_DEVICE $RISING_BUILD_TYPE
+        rise sb
+
+    - name: Clean up signing keys (optional)
+      if: always()
+      run: |
+        remove_keys
