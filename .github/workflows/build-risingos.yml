@@ -60,7 +60,7 @@ jobs:
         if command -v repo &> /dev/null; then
           echo "Repo command found."
           echo "Running repo sync..."
-          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4 -v  # 8 hours timeout with verbose output
+          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4 -v | grep -v '^\* \[new tag\]'  # 8 hours timeout with verbose output, excluding new tag lines
         else
           echo "repo command not found"
           exit 1
