@@ -12,6 +12,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 480  # Set timeout to 8 hours (480 minutes)
 
     steps:
     - name: Set up repository
@@ -48,7 +49,7 @@ jobs:
         PATH: ~/bin:$PATH:/usr/bin  # Ensuring /usr/bin is in the PATH for python3
       run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen
-        repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
+        timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4  # 8 hours timeout
 
     - name: Set up build environment
       run: . build/envsetup.sh
