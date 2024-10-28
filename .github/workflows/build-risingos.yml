@@ -42,27 +42,25 @@ jobs:
         echo "$HOME/bin" >> $GITHUB_PATH
 
     - name: Set up Git LFS
+      run: git lfs install
+
+    - name: Initialize RisingOS Repository
       run: |
-        sudo apt install -y git-lfs
+        # For gms or chromium blobs related errors due to git lfs (gitlab now limits files up to 100mb max) (credits to haggertk):
+        sudo apt install git-lfs
         git lfs install
 
-    - name: Clean up GMS and Chromium blobs
-      run: |
         rm -rf vendor/gms
         rm -rf .repo/projects/vendor/gms.git
         rm -rf .repo/project-objects/*/android_vendor_gms.git
 
-    - name: Initialize RisingOS Repository
-      run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen --git-lfs
-        # Uncomment the following line if you want to use SSH instead
-        # repo init -u git@github.com:RisingTechOSS/android.git -b fifteen --git-lfs
         echo "Repo has been initialized."
         echo "Checking for repo command..."
         if command -v repo &> /dev/null; then
           echo "Repo command found."
           echo "Running repo sync..."
-          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4  # 8 hours timeout
+          timeout 480m repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j4 -v  # 8 hours timeout with verbose output
         else
           echo "repo command not found"
           exit 1
