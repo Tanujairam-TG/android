@@ -42,11 +42,21 @@ jobs:
         echo "$HOME/bin" >> $GITHUB_PATH
 
     - name: Set up Git LFS
-      run: git lfs install
+      run: |
+        sudo apt install -y git-lfs
+        git lfs install
+
+    - name: Clean up GMS and Chromium blobs
+      run: |
+        rm -rf vendor/gms
+        rm -rf .repo/projects/vendor/gms.git
+        rm -rf .repo/project-objects/*/android_vendor_gms.git
 
     - name: Initialize RisingOS Repository
       run: |
-        repo init -u https://github.com/RisingTechOSS/android -b fifteen
+        repo init -u https://github.com/RisingTechOSS/android -b fifteen --git-lfs
+        # Uncomment the following line if you want to use SSH instead
+        # repo init -u git@github.com:RisingTechOSS/android.git -b fifteen --git-lfs
         echo "Repo has been initialized."
         echo "Checking for repo command..."
         if command -v repo &> /dev/null; then
