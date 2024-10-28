@@ -27,7 +27,7 @@ jobs:
 
     - name: Initialize RisingOS Repository
       run: |
-        repo init -u https://github.com/RisingTechOSS/android -b fifteen --git-lfs
+        repo init -u https://github.com/RisingTechOSS/android -b fifteen
         repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
 
     - name: Remove problematic GMS files
