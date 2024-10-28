@@ -20,8 +20,9 @@ jobs:
     - name: Install required packages
       run: |
         sudo apt update
-        sudo apt install -y git-lfs python3 curl  # Install python3 and other packages
-        sudo ln -s /usr/bin/python3 /usr/bin/python  # Add symlink for python3 as python
+        sudo apt install -y git-lfs python3 curl  # Ensure git-lfs, python3, and curl are installed
+        # Create symlink for python3 if needed
+        if ! command -v python &> /dev/null; then sudo ln -s /usr/bin/python3 /usr/bin/python; fi
 
     - name: Download and Install Latest Repo Tool
       run: |
