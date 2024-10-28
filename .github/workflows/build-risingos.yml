@@ -1,13 +1,13 @@
 name: Build RisingOS
 
 on:
-  push:    # Trigger on every push to any branch
+  push:   
     branches:
-      - '*'  # Matches all branches; change to specific branches if needed
-  pull_request:   # Trigger on every pull request
+      - '*'  
+  pull_request:  
     branches:
-      - '*'  # Matches all branches
-  workflow_dispatch:  # Manual trigger
+      - '*'  
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,8 +21,17 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y git-lfs python3 curl
-        # Create symlink for python3 if needed
-        if ! command -v python &> /dev/null; then sudo ln -s /usr/bin/python3 /usr/bin/python; fi
+        if ! command -v python3 &> /dev/null; then 
+          echo "Python3 not found, attempting reinstall"; 
+          sudo apt install -y python3; 
+        fi
+        if ! command -v python &> /dev/null; then 
+          sudo ln -s /usr/bin/python3 /usr/bin/python; 
+        fi
+        echo "Python version:" $(python3 --version)
+        
+    - name: Add Python to PATH
+      run: echo "/usr/bin/python3" >> $GITHUB_PATH
 
     - name: Download and Install Latest Repo Tool
       run: |
@@ -36,7 +45,7 @@ jobs:
 
     - name: Initialize RisingOS Repository
       env:
-        PATH: ~/bin:$PATH
+        PATH: ~/bin:$PATH:/usr/bin  # Ensuring /usr/bin is in the PATH for python3
       run: |
         repo init -u https://github.com/RisingTechOSS/android -b fifteen
         repo sync -c --no-clone-bundle --optimized-fetch --prune --force-sync -j$(nproc --all)
@@ -46,8 +55,8 @@ jobs:
 
     - name: Start RisingOS build
       env:
-        RISING_DEVICE: "sky"            # Device name
-        RISING_BUILD_TYPE: "userdebug"   # Build type
+        RISING_DEVICE: "sky"            
+        RISING_BUILD_TYPE: "userdebug"   
       run: |
         riseup $RISING_DEVICE $RISING_BUILD_TYPE
         rise b
@@ -55,13 +64,13 @@ jobs:
     - name: Archive build outputs
       run: |
         mkdir -p output
-        cp out/target/product/sky/*.zip output/   # Update this path if necessary
+        cp out/target/product/sky/*.zip output/  
 
     - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  # Use your GitHub PAT secret here
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  
       with:
         tag_name: "build-${{ github.run_id }}"
         release_name: "RisingOS Build ${{ github.run_id }}"
@@ -71,7 +80,7 @@ jobs:
     - name: Upload to Release
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  # Use your GitHub PAT secret here
+        GITHUB_TOKEN: ${{ secrets.MY_GITHUB_PAT }}  
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: output/*.zip
